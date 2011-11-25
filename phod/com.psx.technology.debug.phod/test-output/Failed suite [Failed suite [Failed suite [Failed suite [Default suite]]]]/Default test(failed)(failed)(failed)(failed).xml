@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite hostname="Hexagon" name="com.psx.technology.debug.c3po.content.parser.XDebugParserTest" tests="4" failures="3" timestamp="30 Jul 2011 17:52:43 GMT" time="0.037" errors="0">
+  <testcase name="handleLineDataEntry" time="0.015" classname="com.psx.technology.debug.c3po.content.parser.XDebugParserTest">
+    <failure type="java.lang.AssertionError" message="expected:&amp;lt;RouteOverview&amp;gt; but was:&amp;lt;null&amp;gt;">
+      <![CDATA[java.lang.AssertionError: expected:<RouteOverview> but was:<null>
+	at com.psx.technology.debug.c3po.content.parser.XDebugParserTest.handleLineDataEntry(XDebugParserTest.java:30)
+... Removed 30 stack frames]]>
+    </failure>
+  </testcase>
+  <testcase name="handleLineDataExit" time="0.0010" classname="com.psx.technology.debug.c3po.content.parser.XDebugParserTest">
+    <skipped/>
+  </testcase>
+  <testcase name="splitMethodNameWithClass" time="0.0010" classname="com.psx.technology.debug.c3po.content.parser.XDebugParserTest">
+    <failure type="java.lang.AssertionError" message="expected:&amp;lt;TestClass&amp;gt; but was:&amp;lt;null&amp;gt;">
+      <![CDATA[java.lang.AssertionError: expected:<TestClass> but was:<null>
+	at com.psx.technology.debug.c3po.content.parser.XDebugParserTest.splitMethodNameWithClass(XDebugParserTest.java:72)
+... Removed 30 stack frames]]>
+    </failure>
+  </testcase>
+  <testcase name="splitMethodNameWithClassAndNamespace" time="0.0010" classname="com.psx.technology.debug.c3po.content.parser.XDebugParserTest">
+    <failure type="java.lang.AssertionError" message="expected:&amp;lt;TestClass&amp;gt; but was:&amp;lt;null&amp;gt;">
+      <![CDATA[java.lang.AssertionError: expected:<TestClass> but was:<null>
+	at com.psx.technology.debug.c3po.content.parser.XDebugParserTest.splitMethodNameWithClassAndNamespace(XDebugParserTest.java:80)
+... Removed 30 stack frames]]>
+    </failure>
+  </testcase>
+</testsuite>

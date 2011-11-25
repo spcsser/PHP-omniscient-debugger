@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite hostname="Hexagon" name="com.psx.technology.debug.c3po.content.parser.XDebugParserTest" tests="4" failures="1" timestamp="30 Jul 2011 17:57:08 GMT" time="0.035" errors="0">
+  <testcase name="handleLineDataEntry" time="0.014" classname="com.psx.technology.debug.c3po.content.parser.XDebugParserTest"/>
+  <testcase name="handleLineDataExit" time="0.0010" classname="com.psx.technology.debug.c3po.content.parser.XDebugParserTest"/>
+  <testcase name="splitMethodNameWithClass" time="0.0010" classname="com.psx.technology.debug.c3po.content.parser.XDebugParserTest">
+    <failure type="java.lang.StringIndexOutOfBoundsException" message="String index out of range: -1">
+      <![CDATA[java.lang.StringIndexOutOfBoundsException: String index out of range: -1
+	at java.lang.String.substring(Unknown Source)
+	at com.psx.technology.debug.c3po.content.parser.XDebugParser.splitMethodName(XDebugParser.java:135)
+	at com.psx.technology.debug.c3po.content.parser.XDebugParserTest.splitMethodNameWithClass(XDebugParserTest.java:69)
+... Removed 25 stack frames]]>
+    </failure>
+  </testcase>
+  <testcase name="splitMethodNameWithClassAndNamespace" time="0.0" classname="com.psx.technology.debug.c3po.content.parser.XDebugParserTest"/>
+</testsuite>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            name="Debug"
+            id="com.psx.technology.debug.c3po">
+      </category>
+      <view
+            allowMultiple="false"
+            category="com.psx.technology.debug.c3po"
+            class="com.psx.technology.debug.phod.views.CompareRunDataView"
+            icon="icons/sample.gif"
+            id="com.psx.technology.debug.c3po.views.CompareRunDataView"
+            name="Compare Run Data View"
+            restorable="false">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="contexts.xml">
+      </contexts>
+   </extension>
+
+</plugin>

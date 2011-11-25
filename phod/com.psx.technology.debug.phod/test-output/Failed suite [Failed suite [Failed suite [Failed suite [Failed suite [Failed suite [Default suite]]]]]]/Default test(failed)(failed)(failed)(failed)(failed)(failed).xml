@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite hostname="Hexagon" name="com.psx.technology.debug.c3po.content.parser.XDebugParserTest" tests="1" failures="0" timestamp="30 Jul 2011 17:58:45 GMT" time="0.024" errors="0">
+  <testcase name="splitMethodNameWithClass" time="0.013" classname="com.psx.technology.debug.c3po.content.parser.XDebugParserTest"/>
+</testsuite>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.psx.technology.debug.feature"
+      label="Debug feature"
+      version="1.0.0.qualifier"
+      provider-name="psX Technology GmbH">
+
+   <description>
+      Provides frontend for analysing data captured with the php xdebug
+omniscient debugger extension (https://github.com/spcsser/xdebug).
+   </description>
+
+   <copyright>
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="">
+      [Enter License Description here.]
+   </license>
+
+   <plugin
+         id="com.psx.technology.debug.phod"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

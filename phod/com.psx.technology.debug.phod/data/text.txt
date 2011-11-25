@@ -1,0 +1,6 @@
+class Xlogic\Serialization\Test extends Xlogic\Core\Controller\AddOn {
+    protected $varProtected;
+    public final $varePublic=42;
+    private static $varPublicStatic="A quick static remainder...";
+    const constant="Test";
+}
