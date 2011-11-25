@@ -6,15 +6,15 @@
          point="org.eclipse.ui.views">
       <category
             name="Debug"
-            id="com.psx.technology.debug.c3po">
+            id="com.psx.technology.debug.phod">
       </category>
       <view
             allowMultiple="false"
-            category="com.psx.technology.debug.c3po"
+            category="com.psx.technology.debug.phod"
             class="com.psx.technology.debug.phod.views.CompareRunDataView"
             icon="icons/sample.gif"
-            id="com.psx.technology.debug.c3po.views.CompareRunDataView"
-            name="Compare Run Data View"
+            id="com.psx.technology.debug.phod.views.CompareRunDataView"
+            name="PHODebugger"
             restorable="false">
       </view>
    </extension>
