@@ -4,25 +4,15 @@
 
    <extension
          point="org.eclipse.ui.views">
-      <category
-            name="Debug"
-            id="com.psx.technology.debug.phod">
-      </category>
       <view
             allowMultiple="false"
-            category="com.psx.technology.debug.phod"
+            category="org.eclipse.debug.ui"
             class="com.psx.technology.debug.phod.views.CompareRunDataView"
             icon="icons/sample.gif"
             id="com.psx.technology.debug.phod.views.CompareRunDataView"
             name="PHODebugger"
             restorable="false">
       </view>
-   </extension>
-   <extension
-         point="org.eclipse.help.contexts">
-      <contexts
-            file="contexts.xml">
-      </contexts>
    </extension>
 
 </plugin>

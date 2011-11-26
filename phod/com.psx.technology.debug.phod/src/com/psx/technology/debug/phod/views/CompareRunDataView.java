@@ -95,7 +95,7 @@ public class CompareRunDataView extends ViewPart {
 	/**
 	 * The ID of the view as specified by the extension.
 	 */
-	public static final String ID = "com.psx.technology.debug.c3po.views.CompareRunDataView";
+	public static final String ID = "com.psx.technology.debug.phod.views.CompareRunDataView";
 
 	private TreeViewer viewer;
 	private Action action1;

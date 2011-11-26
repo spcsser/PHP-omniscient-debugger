@@ -32,6 +32,7 @@ public class XDebugParser implements Parser {
 	public static final Integer STATE_ENTER = 0;
 	public static final Integer STATE_EXIT = 1;
 	public static final Integer STATE_ASSIGNMENT = 2;
+	public static final Integer STATE_EXCEPTION = 6;
 
 	public static final Long FUNCTION_INTERNAL = 0L;
 	public static final Long FUNCTION_USER_DEFINED = 1L;
@@ -125,6 +126,12 @@ public class XDebugParser implements Parser {
 					} else if (STATE_ASSIGNMENT.equals(actionType)) {
 						cm = prd.createAssignment(id.longValue(), cm);
 						handleAssignmentLineData((Assignment) cm, jsob, pd);
+					} else if(STATE_EXCEPTION.equals(actionType)){
+						cm = prd.createMethod(id.longValue(), cm);
+						MethodCall mc=handleExceptionLineData((MethodCall) cm, jsob, actionType);
+						while(callStack.peek().getLevel()>mc.getLevel()){
+							callStack.pop();
+						}
 					} else {
 						throw new IllegalArgumentException("State is note expected with value " + jsob.get("typ"));
 					}
@@ -155,6 +162,19 @@ public class XDebugParser implements Parser {
 			return prd;
 		}
 		return null;
+	}
+
+	protected MethodCall handleExceptionLineData(MethodCall mc, JSONObject jsob, Integer actionType) {
+		// 0 Level, 1 ID, 2 Enter(0)/Exit(1), 3 timestamp, 4 memory commit
+		mc.setLevel((Number) jsob.get("lvl"));
+
+		mc.setTimestamp((Number) jsob.get("tme"), 0);
+		mc.setMemorySize((Number) jsob.get("mem"), 0);
+		String[] mtd = splitMethodName((String) jsob.get("nme"));
+		mc.setNameArray(mtd);
+		mc.setFunctionTypeId(0);
+		mc.setUserDefined(0);
+		return mc;
 	}
 
 	protected void handleAssignmentLineData(Assignment mc, HashMap<?,?> jsob, ProgramData pd) {
@@ -459,6 +479,7 @@ public class XDebugParser implements Parser {
 
 	protected void handlePropJSONObject(AbstractData parent, HashMap<?,?> jso, Long actionId, Long scope, String scopeType) {
 		String name = (String) jso.get("nme");
+
 		Modifier mod;
 		if(jso.get("mod")==null){
 			mod=Modifier.Local;

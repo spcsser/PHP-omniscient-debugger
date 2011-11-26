@@ -76,7 +76,7 @@ public class ProgramData implements Serializable {
 		if(mod.compareTo(Modifier.Public_Static)>=0 && mod.compareTo(Modifier.Private_Static)<=0){
 			scope=0L;
 		}
-		name=name.replaceFirst("(self::\\$)|(\\$this->)", "");
+		name=name.replaceFirst("(?:self::\\$())|(?:\\$this->())|(?:\\{[^\\\\}]}:(.*))", "$1");
 		String identif=scopeType+":"/*+scope*/+":"+name;
 		vd=variableTable.get(identif);
 		if(vd==null){
