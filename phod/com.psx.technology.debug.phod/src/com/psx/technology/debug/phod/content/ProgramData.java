@@ -2,6 +2,8 @@ package com.psx.technology.debug.phod.content;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.psx.technology.debug.phod.content.data.AbstractData;
 import com.psx.technology.debug.phod.content.data.AtomType;
@@ -16,6 +18,10 @@ public class ProgramData implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 3662558859184043391L;
+	public static final String SCOPETYPE_CLASS = "C";
+	public static final String SCOPETYPE_LOCAL = "L";
+	public static final String SCOPETYPE_GLOBAL = "G";
+	public static final String SCOPETYPE_OBJECT = "O";
 	HashMap<String, VariableData> variableTable;
 	HashMap<Long, ValueData> valueTable;
 	ProgramCalls pc;
@@ -71,13 +77,27 @@ public class ProgramData implements Serializable {
 	}
 
 
-	public VariableData getVariable(AbstractData parent, Long scope, String scopeType, String name, Long actionId, Modifier mod) {
+	public VariableData getVariable(AbstractData parent, Long scope, Long classId, String scopeType, String name, Long actionId, Modifier mod) {
 		VariableData vd=null;
 		if(mod.compareTo(Modifier.Public_Static)>=0 && mod.compareTo(Modifier.Private_Static)<=0){
-			scope=0L;
+			scopeType=SCOPETYPE_CLASS;
+			scope=classId;
 		}
-		name=name.replaceFirst("(?:self::\\$())|(?:\\$this->())|(?:\\{[^\\\\}]}:(.*))", "$1");
-		String identif=scopeType+":"/*+scope*/+":"+name;
+		Pattern pattern=Pattern.compile("(?:self::\\$?(.*))|(?:[a-zA-Z0-9\\_-]*::(.*))");
+		Matcher matcher=pattern.matcher(name);
+		if(matcher.matches()){
+			name=matcher.replaceAll("$1");
+			scopeType=SCOPETYPE_CLASS;
+			scope=classId;
+		}
+		pattern=Pattern.compile("(?:\\$this->(.*))|(?:\\{[^\\\\}]}:(.*))");
+		matcher=pattern.matcher(name);
+		if(matcher.matches()){
+			name=matcher.replaceAll("$1");
+			scopeType=SCOPETYPE_OBJECT;
+		}
+		
+		String identif=scopeType+":"+scope+":"+name;
 		vd=variableTable.get(identif);
 		if(vd==null){
 //			vd=new VariableData(parent, scope, scopeType, name, actionId, mod);

@@ -107,4 +107,19 @@ public class VariableData extends AbstractData {
 
 		return false;
 	}
+
+	public Long findAssignmentTime(Long actionId) {
+		ValueCoreData entry=null,lastEntry=null;
+		for(int i=timeEntrys.size()-1;i>=0;i--){
+			entry=timeEntrys.get(i);
+			if(entry.getActionId()<actionId && lastEntry!=null){
+				if(!lastEntry.equalsIgnoreActionId(entry)){
+					return lastEntry.getActionId();
+				}
+			}else{
+				lastEntry=entry;
+			}
+		}
+		return null;
+	}
 }

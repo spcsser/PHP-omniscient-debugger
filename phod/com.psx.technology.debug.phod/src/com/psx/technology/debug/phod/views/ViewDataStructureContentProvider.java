@@ -14,17 +14,17 @@ class ViewDataStructureContentProvider implements ITreeContentProvider {
 
 	private Long actionId;
 
-	public Long getActionId(){
+	public Long getActionId() {
 		return actionId;
 	}
-	
+
 	@Override
 	public void dispose() {
 	}
 
 	@Override
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		//System.out.println(viewer.toString() + oldInput + newInput);
+		// System.out.println(viewer.toString() + oldInput + newInput);
 	}
 
 	@Override
@@ -34,19 +34,21 @@ class ViewDataStructureContentProvider implements ITreeContentProvider {
 
 	@Override
 	public boolean hasChildren(Object parentElement) {
-		if(parentElement instanceof VariableData){
-			VariableData vd=(VariableData)parentElement;
-			if(vd.hasChildren()){
+		if (parentElement instanceof VariableData) {
+			VariableData vd = (VariableData) parentElement;
+			if (vd.hasChildren()) {
 				return true;
-			}else{
-				AbstractData vcd=null;
-				vcd=vd.getValueDataForAction(actionId>vd.getActionId()?actionId:vd.getActionId());
-				if(vcd==null) return false;
-				if(vcd.getType().equals(AtomType.Object) || vcd.getType().equals(AtomType.Array)) return true;
+			} else {
+				AbstractData vcd = null;
+				vcd = vd.getValueDataForAction(actionId > vd.getActionId() ? actionId : vd.getActionId());
+				if (vcd == null)
+					return false;
+				if (vcd.getType().equals(AtomType.Object) || vcd.getType().equals(AtomType.Array))
+					return true;
 				return vcd.hasChildren();
 			}
-		} else if(parentElement instanceof ValueCoreData){
-			return ((AbstractData)parentElement).hasChildren();
+		} else if (parentElement instanceof ValueCoreData) {
+			return ((AbstractData) parentElement).hasChildren();
 		}
 		return false;
 	}
@@ -55,8 +57,8 @@ class ViewDataStructureContentProvider implements ITreeContentProvider {
 	public Object[] getElements(Object inputElement) {
 
 		if (inputElement instanceof BasicOperation<?>) {
-			BasicOperation<?> bo=(BasicOperation<?>) inputElement;
-			this.actionId=bo.getDataNode().getActionId();
+			BasicOperation<?> bo = (BasicOperation<?>) inputElement;
+			this.actionId = bo.getDataNode().getActionId();
 			return bo.getDataNode().getChildren();
 		}
 
@@ -65,22 +67,22 @@ class ViewDataStructureContentProvider implements ITreeContentProvider {
 
 	@Override
 	public Object[] getChildren(Object parentElement) {
-		if(parentElement instanceof VariableData){
-			VariableData vd=(VariableData)parentElement;
-			if(vd.hasChildren()){
+		if (parentElement instanceof VariableData) {
+			VariableData vd = (VariableData) parentElement;
+			if (vd.hasChildren()) {
 				return vd.getChildren();
-			}else{
-				AbstractData vcd=null;
-				vcd=vd.getValueDataForAction(actionId>vd.getActionId()?actionId:vd.getActionId());
-				
-				if(vcd.getType().equals(AtomType.Object) || vcd.getType().equals(AtomType.Array)){
-					return new Object[]{vcd};
-				}else{
+			} else {
+				AbstractData vcd = null;
+				vcd = vd.getValueDataForAction(actionId > vd.getActionId() ? actionId : vd.getActionId());
+
+				if (vcd.getType().equals(AtomType.Object) || vcd.getType().equals(AtomType.Array)) {
+					return new Object[] { vcd };
+				} else {
 					return vcd.getChildren();
 				}
 			}
-		}else if(parentElement instanceof ValueCoreData){
-			return ((AbstractData)parentElement).getChildren();
+		} else if (parentElement instanceof ValueCoreData) {
+			return ((AbstractData) parentElement).getChildren();
 		}
 		return null;
 	}

@@ -1,6 +1,5 @@
 package com.psx.technology.debug.phod.views;
 
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -166,43 +165,40 @@ public class CompareRunDataView extends ViewPart {
 		column.getColumn().setText("Memorysize");
 		column.getColumn().setWidth(100);
 
-//		viewer.setLabelProvider(new ViewLabelProvider(0));
+		// viewer.setLabelProvider(new ViewLabelProvider(0));
 		// viewer.setSorter(new NameSorter());
 		viewer.setInput(getViewSite());
 
 		Activator.getDefault().setRemotePath("/var/www/workspace/");
 		Activator.getDefault().setLocalPath("D:\\workspace\\php\\");
-		
+
 		OpenStrategy handler = new OpenStrategy(viewer.getControl());
 		handler.addOpenListener(new IOpenEventListener() {
 			public void handleOpen(SelectionEvent e) {
 				if (!viewer.getSelection().isEmpty()) {
-					final BasicOperation<?> mc = (BasicOperation<?>) ((TreeSelection) viewer
-							.getSelection()).getFirstElement();
+					final BasicOperation<?> mc = (BasicOperation<?>) ((TreeSelection) viewer.getSelection())
+							.getFirstElement();
 					String path = mc.getFilePath();
-					path=path.substring(Activator.getDefault().getRemotePath().length());
-					path=Activator.getDefault().getLocalPath()+File.separator+path;
-					path=path.replaceAll("([^\\\\])(\\\\)([^\\\\]|)", "$1$2$3");
-					path=path.replaceAll("/", "\\\\");
+					path = path.substring(Activator.getDefault().getRemotePath().length());
+					path = Activator.getDefault().getLocalPath() + File.separator + path;
+					path = path.replaceAll("([^\\\\])(\\\\)([^\\\\]|)", "$1$2$3");
+					path = path.replaceAll("/", "\\\\");
 					System.out.println(path);
-					String methodName="";
-					PHPFunctionType fType=PHPFunctionType.Unknown;
-					if(mc instanceof MethodCall){
-						MethodCall m=((MethodCall) mc);
-						fType=m.getFunctionType();
-						if(m.getFunctionType().equals(PHPFunctionType.New)){
-							methodName=m.getClassName()+"()";
-						}else{
-							methodName=m.getMethodName();
+					String methodName = "";
+					PHPFunctionType fType = PHPFunctionType.Unknown;
+					if (mc instanceof MethodCall) {
+						MethodCall m = ((MethodCall) mc);
+						fType = m.getFunctionType();
+						if (m.getFunctionType().equals(PHPFunctionType.New)) {
+							methodName = m.getClassName() + "()";
+						} else {
+							methodName = m.getMethodName();
 						}
-					}else{
-						methodName=((Assignment) mc).getVariableName();
+					} else {
+						methodName = ((Assignment) mc).getVariableName();
 					}
-					
-					Action a = createOpenEditorAction(
-							path,
-							mc.getLineNumber(),
-							methodName, fType);
+
+					Action a = createOpenEditorAction(path, mc.getLineNumber(), methodName, fType);
 					if (a != null) {
 						a.run();
 					}
@@ -233,19 +229,21 @@ public class CompareRunDataView extends ViewPart {
 		context.setContentProvider(new ViewDataStructureContentProvider());
 		// context.setLabelProvider(new DelegatingStyledCellLabelProvider(new
 		// ViewDataStructureLabelProvider()));
-//		context.setLabelProvider(new ViewDataStructureLabelProvider((ViewDataStructureContentProvider) context
-//				.getContentProvider()));
+		// context.setLabelProvider(new
+		// ViewDataStructureLabelProvider((ViewDataStructureContentProvider)
+		// context
+		// .getContentProvider()));
 		// context.setSorter(new NameSorter());
-		
+
 		column = new TreeViewerColumn(context, SWT.LEFT, 0);
 		column.setLabelProvider(new ViewDataStructureLabelProvider((ViewDataStructureContentProvider) context
-				.getContentProvider(),0));
+				.getContentProvider(), 0));
 		column.getColumn().setText("Variable");
 		column.getColumn().setWidth(400);
-		
+
 		column = new TreeViewerColumn(context, SWT.LEFT, 1);
 		column.setLabelProvider(new ViewDataStructureLabelProvider((ViewDataStructureContentProvider) context
-				.getContentProvider(),1));
+				.getContentProvider(), 1));
 		column.getColumn().setText("Type");
 		column.getColumn().setWidth(300);
 
@@ -285,10 +283,10 @@ public class CompareRunDataView extends ViewPart {
 							ViewDataStructureContentProvider vcp = (ViewDataStructureContentProvider) context
 									.getContentProvider();
 							Long id = vcp.getActionId() > obj.getActionId() ? vcp.getActionId() : obj.getActionId();
-							ValueCoreData vcd=obj.getValueDataForAction(id);
-							if(vcd!=null){
+							ValueCoreData vcd = obj.getValueDataForAction(id);
+							if (vcd != null) {
 								content.setText(vcd.getString());
-							}else{
+							} else {
 								content.setText("");
 							}
 							oldNode = obj;
@@ -349,59 +347,60 @@ public class CompareRunDataView extends ViewPart {
 			}
 
 			@Override
-			public void keyPressed(KeyEvent e) {}
+			public void keyPressed(KeyEvent e) {
+			}
 		});
-		RowData rd = new RowData(150,20);
+		RowData rd = new RowData(150, 20);
 		searchText.setLayoutData(rd);
-		
-		useRegexButton=new Button(searchPanel, SWT.CHECK);
+
+		useRegexButton = new Button(searchPanel, SWT.CHECK);
 		useRegexButton.setText("Regular Expression");
 	}
 
-	protected Job getSearchJob(){
-		if(searchJob==null){
-			searchJob=new Job("Search") {
-				protected String searchString=null;
-				protected ISelection selection=null;
-				
-				public void setProperty(QualifiedName key, Object value){
-					searchString=searchText.getText();
-					if(!useRegexButton.getSelection()){
-						searchString=".*"+Matcher.quoteReplacement(searchString)+".*";
+	protected Job getSearchJob() {
+		if (searchJob == null) {
+			searchJob = new Job("Search") {
+				protected String searchString = null;
+				protected ISelection selection = null;
+
+				public void setProperty(QualifiedName key, Object value) {
+					searchString = searchText.getText();
+					if (!useRegexButton.getSelection()) {
+						searchString = ".*" + Matcher.quoteReplacement(searchString) + ".*";
 					}
-					selection=viewer.getSelection();
+					selection = viewer.getSelection();
 					super.setProperty(key, value);
 				}
-				
+
 				@Override
 				public IStatus run(IProgressMonitor monitor) {
-					monitor.beginTask("Searching for text: "+searchString, IProgressMonitor.UNKNOWN);
-					BasicOperation<?> bo=null;
-					SearchResult result=null;
-					
-					if(!selection.isEmpty()){
-						bo=(BasicOperation<?>)((TreeSelection)selection).getFirstElement();
-					}else{
-						bo=prd.getRootCall();
+					monitor.beginTask("Searching for text: " + searchString, IProgressMonitor.UNKNOWN);
+					BasicOperation<?> bo = null;
+					SearchResult result = null;
+
+					if (!selection.isEmpty()) {
+						bo = (BasicOperation<?>) ((TreeSelection) selection).getFirstElement();
+					} else {
+						bo = prd.getRootCall();
 					}
-					
+
 					try {
-						result=prd.searchString(searchString, bo, monitor);
+						result = prd.searchString(searchString, bo, monitor);
 					} catch (CancellationException e) {
-					}finally{
+					} finally {
 						monitor.done();
 					}
-					
-					if(result!=null){
-						StructuredSelection viewerSelect,contextSelect;
-						viewerSelect=new StructuredSelection(result.getBasicOperation());
-						if(result.getAbstractData()!=null){
-							contextSelect=new StructuredSelection(result.getAbstractData());
-						}else{
-							contextSelect=new StructuredSelection();
+
+					if (result != null) {
+						StructuredSelection viewerSelect, contextSelect;
+						viewerSelect = new StructuredSelection(result.getBasicOperation());
+						if (result.getAbstractData() != null) {
+							contextSelect = new StructuredSelection(result.getAbstractData());
+						} else {
+							contextSelect = new StructuredSelection();
 						}
 						setViewerSelection(viewerSelect, contextSelect);
-					}else{
+					} else {
 						System.out.println("Item could not be found");
 					}
 					return Status.OK_STATUS;
@@ -410,17 +409,18 @@ public class CompareRunDataView extends ViewPart {
 		}
 		return searchJob;
 	}
-	
+
 	protected void performSearch(String text) {
-		if(getSearchJob().getState()==Job.NONE){
+		if (getSearchJob().getState() == Job.NONE) {
 			getSearchJob().setProperty(null, null);
 			getSearchJob().schedule();
 		}
 	}
-	
-	private void setViewerSelection(final StructuredSelection viewerSelection,final StructuredSelection contextSelection){
-		UIJob job=new UIJob("SetSelection") {
-			
+
+	private void setViewerSelection(final StructuredSelection viewerSelection,
+			final StructuredSelection contextSelection) {
+		UIJob job = new UIJob("SetSelection") {
+
 			@Override
 			public IStatus runInUIThread(IProgressMonitor monitor) {
 				viewer.setSelection(viewerSelection, true);
@@ -428,8 +428,8 @@ public class CompareRunDataView extends ViewPart {
 			}
 		};
 		job.schedule();
-		job=new UIJob("SetSelection") {
-			
+		job = new UIJob("SetSelection") {
+
 			@Override
 			public IStatus runInUIThread(IProgressMonitor monitor) {
 				context.setSelection(contextSelection, true);
@@ -461,11 +461,12 @@ public class CompareRunDataView extends ViewPart {
 					if (ad instanceof VariableData) {
 						VariableData vd = (VariableData) ad;
 						if (vd.getModifier().compareTo(Modifier.Return) <= 0) {
-							boolean isVariable=vd.getModifier().compareTo(Modifier.Local)<=0 && vd.getParent().getParent()==null;
-							CompareRunDataView.this.fillContextMenu(manager,isVariable);
+							boolean isVariable = vd.getModifier().compareTo(Modifier.Local) <= 0
+									/*&& vd.getParent().getParent() == null*/;
+							CompareRunDataView.this.fillContextMenu(manager, isVariable);
 						}
 					} else {
-						CompareRunDataView.this.fillContextMenu(manager,false);
+						CompareRunDataView.this.fillContextMenu(manager, false);
 					}
 				}
 			}
@@ -488,7 +489,7 @@ public class CompareRunDataView extends ViewPart {
 	}
 
 	private void fillContextMenu(IMenuManager manager, boolean isVariable) {
-		if(isVariable){
+		if (isVariable) {
 			manager.add(action3);
 		}
 		manager.add(action4);
@@ -545,11 +546,11 @@ public class CompareRunDataView extends ViewPart {
 	protected void performEditSettings() {
 		DirectoryDialog dialog = new DirectoryDialog(viewer.getControl().getShell());
 		dialog.setText("Select corresponding local path");
-		String workspaceRoot=ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
+		String workspaceRoot = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
 		dialog.setFilterPath(workspaceRoot);
 
 		final String filename = dialog.open();
-		
+
 		Activator.getDefault().setLocalPath(filename);
 	}
 
@@ -558,14 +559,19 @@ public class CompareRunDataView extends ViewPart {
 			TreeNode ad = (TreeNode) ((TreeSelection) context.getSelection()).getFirstElement();
 			if (ad instanceof VariableData) {
 				VariableData vd = (VariableData) ad;
-				//ArrayField
-				BasicOperation<?> bo=null;
-				if (vd.getModifier().compareTo(Modifier.This) <= 0 && vd.getModifier().compareTo(Modifier.ArrayField) >0) {//Not This or Return or Parameter					
-					bo=prd.getMethodById(vd.getActionId());
-				}else if(vd.getModifier().equals(Modifier.Return)){
-					bo=prd.getMethodById(vd.getParent().getActionId());
+				// ArrayField
+				Long actionId = ((ViewDataStructureContentProvider) context.getContentProvider()).getActionId();
+				actionId=vd.findAssignmentTime(actionId);
+				//actionId=vcd.getActionId();
+				BasicOperation<?> bo = null;
+				if (vd.getModifier().compareTo(Modifier.This) <= 0
+						&& vd.getModifier().compareTo(Modifier.ArrayField) > 0
+				) {// Not This or Return or Parameter
+					bo = prd.getMethodById(actionId);
+				} else if (vd.getModifier().equals(Modifier.Return)) {
+					bo = prd.getMethodById(vd.getParent().getActionId());
 				}
-				if(bo!=null){	
+				if (bo != null) {
 					viewer.setSelection(new StructuredSelection(bo), true);
 				}
 			} else {
@@ -580,20 +586,26 @@ public class CompareRunDataView extends ViewPart {
 			TreeNode ad = (TreeNode) ((TreeSelection) context.getSelection()).getFirstElement();
 			if (ad instanceof VariableData) {
 				VariableData vd = (VariableData) ad;
-				if (vd.getModifier().compareTo(Modifier.Return) <= 0) {//Not This or Return or Parameter
-					Long actionId=((ViewDataStructureContentProvider)context.getContentProvider()).getActionId();
-					ValueCoreData vcd=vd.getValueDataForAction(actionId>vd.getActionId()?actionId:vd.getActionId());
-					BasicOperation<?> bo=prd.getMethodById(vcd.getCreationVcd().getActionId());//
+				if (vd.getModifier().compareTo(Modifier.Return) <= 0) {// Not
+																		// This
+																		// or
+																		// Return
+																		// or
+																		// Parameter
+					Long actionId = ((ViewDataStructureContentProvider) context.getContentProvider()).getActionId();
+					ValueCoreData vcd = vd.getValueDataForAction(actionId > vd.getActionId() ? actionId : vd
+							.getActionId());
+					BasicOperation<?> bo = prd.getMethodById(vcd.getCreationVcd().getActionId());//
 					viewer.setSelection(new StructuredSelection(bo), true);
 				}
-			} else if( ad instanceof ValueCoreData){
-				ValueCoreData vcd=(ValueCoreData)ad;
-				BasicOperation<?> bo=prd.getMethodById(vcd.getCreationVcd().getActionId());
+			} else if (ad instanceof ValueCoreData) {
+				ValueCoreData vcd = (ValueCoreData) ad;
+				BasicOperation<?> bo = prd.getMethodById(vcd.getCreationVcd().getActionId());
 				viewer.setSelection(new StructuredSelection(bo), true);
 			}
 		}
 	}
-	
+
 	protected boolean performRead() {
 		FileDialog dialog = new FileDialog(viewer.getControl().getShell());
 		dialog.setText("Select file to parse");
@@ -678,38 +690,43 @@ public class CompareRunDataView extends ViewPart {
 	}
 
 	protected ProgramCalls readData(String filename, IProgressMonitor monitor) throws CoreException {
-		System.gc(); /*System.gc(); System.gc(); System.gc();
-	    System.gc(); System.gc(); System.gc(); System.gc();
-	    System.gc(); System.gc(); System.gc(); System.gc();
-	    System.gc(); System.gc(); System.gc(); System.gc();*/
-		long mem0 = Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
+		System.gc(); /*
+					 * System.gc(); System.gc(); System.gc(); System.gc();
+					 * System.gc(); System.gc(); System.gc(); System.gc();
+					 * System.gc(); System.gc(); System.gc(); System.gc();
+					 * System.gc(); System.gc(); System.gc();
+					 */
+		long mem0 = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 		long time0 = new Date().getTime();
 		XDebugParser xdp = XDebugParser.createParser();
 		ProgramCalls pc = xdp.parseCallFile(filename, monitor);
-		
-		//Collect current timestamp
+
+		// Collect current timestamp
 		long time1 = new Date().getTime();
-		//Run garbage collection, to hide evidence
+		// Run garbage collection, to hide evidence
 		System.gc();
-		//Calculate memory consumption, after discarding dead objects
-		long mem1 = Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
-		
+		// Calculate memory consumption, after discarding dead objects
+		long mem1 = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+
 		String datafilename = filename.replaceAll("\\.xt$", "_data.xt");
 		xdp.parseDataFile(datafilename, monitor);
-		
+
 		long time2 = new Date().getTime();
-		
+
 		xdp = null;
-		System.gc(); /*System.gc(); System.gc(); System.gc();
-	    System.gc(); System.gc(); System.gc(); System.gc();
-	    System.gc(); System.gc(); System.gc(); System.gc();
-	    System.gc(); System.gc(); System.gc(); System.gc();*/
-		
-		long mem2=Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory();
-		
+		System.gc(); /*
+					 * System.gc(); System.gc(); System.gc(); System.gc();
+					 * System.gc(); System.gc(); System.gc(); System.gc();
+					 * System.gc(); System.gc(); System.gc(); System.gc();
+					 * System.gc(); System.gc(); System.gc();
+					 */
+
+		long mem2 = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+
 		pc.getProgramData().getDataStatistics();
-		System.out.println(mem0+" Byte\t"+mem1+" Byte\t"+mem2+" Byte\t\t"+time0+" ms\t"+time1+" ms\t"+time2+" ms");
-		
+		System.out.println(mem0 + " Byte\t" + mem1 + " Byte\t" + mem2 + " Byte\t\t" + time0 + " ms\t" + time1 + " ms\t"
+				+ time2 + " ms");
+
 		return pc;
 	}
 }
