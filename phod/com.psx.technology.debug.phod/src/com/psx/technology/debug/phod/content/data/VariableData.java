@@ -116,10 +116,9 @@ public class VariableData extends AbstractData {
 				if(!lastEntry.equalsIgnoreActionId(entry)){
 					return lastEntry.getActionId();
 				}
-			}else{
-				lastEntry=entry;
 			}
+			lastEntry=entry;
 		}
-		return null;
+		return lastEntry==null ? null : lastEntry.getActionId();
 	}
 }

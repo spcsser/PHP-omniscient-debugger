@@ -23,6 +23,8 @@ class ViewLabelProvider extends ColumnLabelProvider {
 	protected Hashtable<String, Image> imageTable;
 	private NumberFormat doubleNumberFormat;
 	private NumberFormat integerNumberFormat;
+	public boolean showNamespaceInTooltip=true;
+	public boolean showNamespaceInList=false;
 
 	public ViewLabelProvider(int index) {
 		this.index = index;
@@ -41,7 +43,7 @@ class ViewLabelProvider extends ColumnLabelProvider {
 			if (bo instanceof MethodCall) {
 				MethodCall mc = (MethodCall) bo;
 				if (mc.isUserDefined()) {
-					if (mc.getNamespace() != null) {
+					if (mc.getNamespace() != null && showNamespaceInList) {
 						result += mc.getNamespace() + "\\";
 					}
 					if (mc.getClassName() != null && mc.getClassName().length() != 0) {
@@ -104,7 +106,7 @@ class ViewLabelProvider extends ColumnLabelProvider {
 		if (object instanceof MethodCall) {
 			MethodCall mc = (MethodCall) object;
 			if (mc.isUserDefined()) {
-				if (mc.getNamespace() != null) {
+				if (mc.getNamespace() != null && showNamespaceInTooltip) {
 					result += mc.getNamespace() + "\\";
 				}
 				if (mc.getClassName() != null && mc.getClassName().length() != 0) {

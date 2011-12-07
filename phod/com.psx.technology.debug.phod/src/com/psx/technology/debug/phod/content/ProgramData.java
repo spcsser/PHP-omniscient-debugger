@@ -82,19 +82,33 @@ public class ProgramData implements Serializable {
 		if(mod.compareTo(Modifier.Public_Static)>=0 && mod.compareTo(Modifier.Private_Static)<=0){
 			scopeType=SCOPETYPE_CLASS;
 			scope=classId;
+		}else if(mod.compareTo(Modifier.Local)==0){
+			scopeType=SCOPETYPE_LOCAL;
+			if(parent instanceof VariableData && ((VariableData)parent).getModifier().equals(Modifier.Arguments)){
+				scope=actionId;
+			}
 		}
-		Pattern pattern=Pattern.compile("(?:self::\\$?(.*))|(?:[a-zA-Z0-9\\_-]*::(.*))");
+		Pattern pattern=Pattern.compile("(?:(?:self::\\$?)|(?:[a-zA-Z0-9\\_-]*::))(.*)");
 		Matcher matcher=pattern.matcher(name);
 		if(matcher.matches()){
 			name=matcher.replaceAll("$1");
 			scopeType=SCOPETYPE_CLASS;
 			scope=classId;
 		}
-		pattern=Pattern.compile("(?:\\$this->(.*))|(?:\\{[^\\\\}]}:(.*))");
+		pattern=Pattern.compile("(?:(?:\\$?(?:[^\\->]*->)+)|(?:\\{[^\\\\}]\\}:))(.*)");
 		matcher=pattern.matcher(name);
 		if(matcher.matches()){
 			name=matcher.replaceAll("$1");
 			scopeType=SCOPETYPE_OBJECT;
+		}
+		pattern=Pattern.compile("\\$(.*)");
+		matcher=pattern.matcher(name);
+		if(matcher.matches()){
+			name=matcher.replaceAll("$1");
+			if(scopeType==""){
+				scopeType=SCOPETYPE_LOCAL;
+				scope=actionId;
+			}
 		}
 		
 		String identif=scopeType+":"+scope+":"+name;
