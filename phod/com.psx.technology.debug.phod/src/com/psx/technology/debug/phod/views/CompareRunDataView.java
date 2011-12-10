@@ -1,12 +1,10 @@
 package com.psx.technology.debug.phod.views;
 
-import java.io.File;
 import java.util.Date;
 import java.util.Vector;
 import java.util.concurrent.CancellationException;
 import java.util.regex.Matcher;
 
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -21,6 +19,8 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.util.IOpenEventListener;
@@ -36,7 +36,6 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
@@ -45,23 +44,20 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.Sash;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.UIJob;
 
@@ -77,6 +73,7 @@ import com.psx.technology.debug.phod.content.data.ValueData.ValueCoreData;
 import com.psx.technology.debug.phod.content.data.VariableData;
 import com.psx.technology.debug.phod.content.parser.PHPFunctionType;
 import com.psx.technology.debug.phod.content.parser.XDebugParser;
+import com.psx.technology.debug.phod.preferences.PreferenceConstants;
 import com.psx.technology.debug.phod.ui.OpenEditorAtLineAction;
 
 /**
@@ -93,7 +90,6 @@ import com.psx.technology.debug.phod.ui.OpenEditorAtLineAction;
  * are presented in the same way everywhere.
  * <p>
  */
-
 public class CompareRunDataView extends ViewPart {
 
 	/**
@@ -198,40 +194,10 @@ public class CompareRunDataView extends ViewPart {
 		// viewer.setSorter(new NameSorter());
 		viewer.setInput(getViewSite());
 
-		Activator.getDefault().setRemotePath("/var/www/workspace/");
-		Activator.getDefault().setLocalPath("D:\\workspace\\php\\");
-
 		OpenStrategy handler = new OpenStrategy(viewer.getControl());
 		handler.addOpenListener(new IOpenEventListener() {
 			public void handleOpen(SelectionEvent e) {
-				if (!viewer.getSelection().isEmpty()) {
-					final BasicOperation<?> mc = (BasicOperation<?>) ((TreeSelection) viewer.getSelection())
-							.getFirstElement();
-					String path = mc.getFilePath();
-					path = path.substring(Activator.getDefault().getRemotePath().length());
-					path = Activator.getDefault().getLocalPath() + File.separator + path;
-					path = path.replaceAll("([^\\\\])(\\\\)([^\\\\]|)", "$1$2$3");
-					path = path.replaceAll("/", "\\\\");
-					System.out.println(path);
-					String methodName = "";
-					PHPFunctionType fType = PHPFunctionType.Unknown;
-					if (mc instanceof MethodCall) {
-						MethodCall m = ((MethodCall) mc);
-						fType = m.getFunctionType();
-						if (m.getFunctionType().equals(PHPFunctionType.New)) {
-							methodName = m.getClassName() + "()";
-						} else {
-							methodName = m.getMethodName();
-						}
-					} else {
-						methodName = ((Assignment) mc).getVariableName();
-					}
-
-					Action a = createOpenEditorAction(path, mc.getLineNumber(), methodName, fType);
-					if (a != null) {
-						a.run();
-					}
-				}
+				openFile();
 			}
 		});
 
@@ -339,6 +305,47 @@ public class CompareRunDataView extends ViewPart {
 		hookContextMenu();
 		contributeToActionBars();
 
+	}
+
+	protected void openFile() {
+		if (!viewer.getSelection().isEmpty()) {
+			final BasicOperation<?> mc = (BasicOperation<?>) ((TreeSelection) viewer.getSelection())
+					.getFirstElement();
+			
+			IPreferenceStore store=Activator.getDefault().getPreferenceStore();
+			String[][] paths=Activator.parseStorageString(store.getString(PreferenceConstants.P_MAPPING));
+			
+			String path = mc.getFilePath();
+			for(String[] p:paths){
+				if(path.matches(p[0]+".*")){
+					path=path.replaceAll(p[0]+"(.*)", Matcher.quoteReplacement(p[1])+"$1");
+					break;
+				}
+			}
+//			path = path.substring(Activator.getDefault().getRemotePath().length());
+//			path = Activator.getDefault().getLocalPath() + File.separator + path;
+//			path = path.replaceAll("([^\\\\])(\\\\)([^\\\\]|)", "$1$2$3");
+//			path = path.replaceAll("/", "\\\\");
+			
+			String methodName = "";
+			PHPFunctionType fType = PHPFunctionType.Unknown;
+			if (mc instanceof MethodCall) {
+				MethodCall m = ((MethodCall) mc);
+				fType = m.getFunctionType();
+				if (m.getFunctionType().equals(PHPFunctionType.New)) {
+					methodName = m.getClassName() + "()";
+				} else {
+					methodName = m.getMethodName();
+				}
+			} else {
+				methodName = ((Assignment) mc).getVariableName();
+			}
+
+			Action a = createOpenEditorAction(path, mc.getLineNumber(), methodName, fType);
+			if (a != null) {
+				a.run();
+			}
+		}
 	}
 
 	private void createNavigationPanel(Composite leftParent) {
@@ -459,20 +466,25 @@ public class CompareRunDataView extends ViewPart {
 		TreeNode node=(TreeNode)ts.getFirstElement(), selection=null;
 		Vector<TreeNode> children=null;
 		int index=0;
+		boolean setExpanded=false;
 		
 		if(node.getParent()==null){
 			return;
 		}
 		
 		switch (direction) {
+		case NAVI_STEP_OUT:
+			if(node.getParent().getParent()==null){
+				break;
+			}
+			selection=node.getParent();
+			setExpanded=false;
+			break;
 		case NAVI_STEP_INTO:
 			if(node.hasChildren()){
 				selection=node.getChildrenVector().firstElement();
+				break;
 			}
-			break;
-		case NAVI_STEP_OUT:
-			selection=node.getParent();
-			break;
 		case NAVI_STEP_FORWARD:
 			do{
 				children=node.getParent().getChildrenVector();
@@ -501,9 +513,11 @@ public class CompareRunDataView extends ViewPart {
 			break;
 		}
 		if(selection!=null){
-			ts=new TreeSelection(new TreePath(new TreeNode[]{selection}));
-		
+			TreePath tp=new TreePath(new TreeNode[]{selection});
+			ts=new TreeSelection(tp);
+			viewer.setExpandedState(tp, setExpanded);
 			viewer.setSelection(ts, true);
+			openFile();
 		}
 	}
 
@@ -732,14 +746,8 @@ public class CompareRunDataView extends ViewPart {
 	}
 
 	protected void performEditSettings() {
-		DirectoryDialog dialog = new DirectoryDialog(viewer.getControl().getShell());
-		dialog.setText("Select corresponding local path");
-		String workspaceRoot = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
-		dialog.setFilterPath(workspaceRoot);
-
-		final String filename = dialog.open();
-
-		Activator.getDefault().setLocalPath(filename);
+		PreferenceDialog pd=PreferencesUtil.createPreferenceDialogOn(null, Activator.PREFERENCES_ID, null, null);
+		pd.open();
 	}
 
 	protected void findVariableAssignment() {

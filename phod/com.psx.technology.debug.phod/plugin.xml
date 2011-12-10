@@ -14,5 +14,19 @@
             restorable="false">
       </view>
    </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="com.psx.technology.debug.phod.preferences.PhodPreferencePage"
+            id="com.psx.technology.debug.phod.preferences.PhodPreferencePage"
+            name="PHOD">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="com.psx.technology.debug.phod.preferences.PreferenceInitializer">
+      </initializer>
+   </extension>
 
 </plugin>

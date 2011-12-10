@@ -73,13 +73,12 @@ class ViewLabelProvider extends ColumnLabelProvider {
 			}
 			break;
 		case 1:
-
 			result = getDoubleNumberFormat().format(bo.getTimestampOnEntry(), new StringBuffer(),
-					new FieldPosition(java.text.NumberFormat.Field.DECIMAL_SEPARATOR, 3)).toString();
+					new FieldPosition(java.text.NumberFormat.Field.DECIMAL_SEPARATOR, -1)).toString();
 			break;
 		case 2:
 			result = getIntegerNumberFormat().format(bo.getMemorySizeOnEntry(), new StringBuffer(),
-					new FieldPosition(java.text.NumberFormat.Field.GROUPING_SEPARATOR, 3)).toString();
+					new FieldPosition(java.text.NumberFormat.Field.GROUPING_SEPARATOR, -1)).toString();
 			break;
 		}
 		return result;
@@ -88,7 +87,7 @@ class ViewLabelProvider extends ColumnLabelProvider {
 	protected NumberFormat getDoubleNumberFormat() {
 		if (doubleNumberFormat == null) {
 			doubleNumberFormat = DecimalFormat.getNumberInstance();
-			doubleNumberFormat.setMinimumFractionDigits(3);
+			doubleNumberFormat.setMinimumFractionDigits(6);
 		}
 		return doubleNumberFormat;
 	}

@@ -273,6 +273,7 @@ public class XDebugParser implements Parser {
 			Number aid=null;
 			MethodCall mc = null;
 			VariableData vd = null;
+			Modifier mod= null;
 			
 			
 			monitor.worked(1);
@@ -296,6 +297,7 @@ public class XDebugParser implements Parser {
 					type = ((Number) jsob.get("atp")).intValue();
 					basop = prd.getMethodById(actionId.longValue());
 					scope = 0L;
+					mod=Modifier.Unknown;
 					if (basop == null) {
 						System.err.println("Skipped id " + actionId+", no method found.");
 						continue;
@@ -359,8 +361,9 @@ public class XDebugParser implements Parser {
 						if(scope==null || scope.intValue()==0){
 							scope=basop.getParent().getActionId();
 							scopeType=ProgramData.SCOPETYPE_LOCAL;
+							mod=Modifier.Local;
 						}
-						vd = pd.getVariable(basop.getDataNode(), scope.longValue(), scope.longValue(), scopeType, name, actionId.longValue(), Modifier.Unknown);
+						vd = pd.getVariable(basop.getDataNode(), scope.longValue(), scope.longValue(), scopeType, name, actionId.longValue(), mod);
 						handlePropJSONObject(vd, jsob, actionId.longValue(), scope.longValue(), scopeType);
 						break;
 					default:

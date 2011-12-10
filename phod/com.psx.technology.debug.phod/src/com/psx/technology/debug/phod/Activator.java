@@ -11,6 +11,7 @@ public class Activator extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "com.psx.technology.debug.phod"; //$NON-NLS-1$
+	public static final String PREFERENCES_ID = "com.psx.technology.debug.phod.preferences.PhodPreferencePage";
 
 	// The shared instance
 	private static Activator plugin;
@@ -63,19 +64,15 @@ public class Activator extends AbstractUIPlugin {
 		return imageDescriptorFromPlugin(PLUGIN_ID, path);
 	}
 
-	public void setLocalPath(String filename) {
-		this.localPath=filename;
-	}
-	
-	public String getLocalPath(){
-		return this.localPath;
-	}
-	
-	public String getRemotePath(){
-		return remotePath;
-	}
-	
-	public void setRemotePath(String remotePath){
-		this.remotePath=remotePath;
+	public static String[][] parseStorageString(String string){
+		String[] r1=null;
+		String[][] result=null;
+		r1=string.split(";;");
+		result=new String[r1.length][2];
+		for(int i=0;i<r1.length;i++){
+			result[i]=r1[i].split("::");
+		}
+		
+		return result;
 	}
 }

@@ -79,7 +79,7 @@ public class ProgramData implements Serializable {
 
 	public VariableData getVariable(AbstractData parent, Long scope, Long classId, String scopeType, String name, Long actionId, Modifier mod) {
 		VariableData vd=null;
-		if(mod.compareTo(Modifier.Public_Static)>=0 && mod.compareTo(Modifier.Private_Static)<=0){
+		if(mod.compareTo(Modifier.Static)>=0 && mod.compareTo(Modifier.Private_Static)<=0){
 			scopeType=SCOPETYPE_CLASS;
 			scope=classId;
 		}else if(mod.compareTo(Modifier.Local)==0){
@@ -94,6 +94,9 @@ public class ProgramData implements Serializable {
 			name=matcher.replaceAll("$1");
 			scopeType=SCOPETYPE_CLASS;
 			scope=classId;
+			if(mod.equals(Modifier.Unknown)||mod.equals(Modifier.Local)){
+				mod=Modifier.Static;
+			}
 		}
 		pattern=Pattern.compile("(?:(?:\\$?(?:[^\\->]*->)+)|(?:\\{[^\\\\}]\\}:))(.*)");
 		matcher=pattern.matcher(name);
