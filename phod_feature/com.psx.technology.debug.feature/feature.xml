@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="com.psx.technology.debug.feature"
+      id="com.psx.technology.debug.phodfeature"
       label="PHODebugger feature"
       version="1.0.0.qualifier"
       provider-name="psX Technology GmbH">

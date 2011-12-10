@@ -19,7 +19,7 @@ public abstract class BasicOperation<T> extends TreeNode  implements Comparable<
 	protected Number[] timestamp;
 	protected Number[] memorySize;
 
-	protected Integer stateCount = 2;
+	protected Integer stateCount;
 	protected String filePath;
 	protected Number lineNumber;
 	protected AbstractData dataNode;

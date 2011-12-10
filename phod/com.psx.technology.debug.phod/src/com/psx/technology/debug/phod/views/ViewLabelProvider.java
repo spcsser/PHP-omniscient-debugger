@@ -18,21 +18,23 @@ import com.psx.technology.debug.phod.content.data.VariableData;
 import com.psx.technology.debug.phod.content.parser.PHPFunctionType;
 
 class ViewLabelProvider extends ColumnLabelProvider {
-	
-	protected int index; 
+
+	protected int index;
 	protected Hashtable<String, Image> imageTable;
 	private NumberFormat doubleNumberFormat;
 	private NumberFormat integerNumberFormat;
-	
-	public ViewLabelProvider(int index){
-		this.index=index;
-		imageTable=new Hashtable<String, Image>();
+	public boolean showNamespaceInTooltip=true;
+	public boolean showNamespaceInList=false;
+
+	public ViewLabelProvider(int index) {
+		this.index = index;
+		imageTable = new Hashtable<String, Image>();
 	}
-	
-	public String getText(Object obj){
+
+	public String getText(Object obj) {
 		return getColumnText(obj, index);
 	}
-	
+
 	public String getColumnText(Object obj, int index) {
 		String result = "";
 		BasicOperation<?> bo = (BasicOperation<?>) obj;
@@ -41,18 +43,23 @@ class ViewLabelProvider extends ColumnLabelProvider {
 			if (bo instanceof MethodCall) {
 				MethodCall mc = (MethodCall) bo;
 				if (mc.isUserDefined()) {
-					result = mc.getClassName();
-					switch (mc.getFunctionType()) {
-					case StaticMember:
-						result += "::";
-						break;
-					case Member:
-						;
-					case New:
-					case Normal:
-					default:
-						result += "->";
-						break;
+					if (mc.getNamespace() != null && showNamespaceInList) {
+						result += mc.getNamespace() + "\\";
+					}
+					if (mc.getClassName() != null && mc.getClassName().length() != 0) {
+						result += mc.getClassName();
+						switch (mc.getFunctionType()) {
+						case StaticMember:
+							result += "::";
+							break;
+						case Member:
+							;
+						case New:
+						case Normal:
+						default:
+							result += "->";
+							break;
+						}
 					}
 					result += mc.getMethodName();
 				} else if (mc.getFunctionType().getId() >= PHPFunctionType.Eval.getId()) {
@@ -66,31 +73,29 @@ class ViewLabelProvider extends ColumnLabelProvider {
 			}
 			break;
 		case 1:
-			
-			result = getDoubleNumberFormat()
-					.format(bo.getTimestampOnEntry(), new StringBuffer(),
-							new FieldPosition(java.text.NumberFormat.Field.DECIMAL_SEPARATOR, 3)).toString();
+
+			result = getDoubleNumberFormat().format(bo.getTimestampOnEntry(), new StringBuffer(),
+					new FieldPosition(java.text.NumberFormat.Field.DECIMAL_SEPARATOR, 3)).toString();
 			break;
 		case 2:
-			result = getIntegerNumberFormat()
-					.format(bo.getMemorySizeOnEntry(), new StringBuffer(),
-							new FieldPosition(java.text.NumberFormat.Field.GROUPING_SEPARATOR, 3)).toString();
+			result = getIntegerNumberFormat().format(bo.getMemorySizeOnEntry(), new StringBuffer(),
+					new FieldPosition(java.text.NumberFormat.Field.GROUPING_SEPARATOR, 3)).toString();
 			break;
 		}
 		return result;
 	}
-	
-	protected NumberFormat getDoubleNumberFormat(){
-		if(doubleNumberFormat==null){
-			doubleNumberFormat=DecimalFormat.getNumberInstance();
+
+	protected NumberFormat getDoubleNumberFormat() {
+		if (doubleNumberFormat == null) {
+			doubleNumberFormat = DecimalFormat.getNumberInstance();
 			doubleNumberFormat.setMinimumFractionDigits(3);
 		}
 		return doubleNumberFormat;
 	}
-	
-	protected NumberFormat getIntegerNumberFormat(){
-		if(integerNumberFormat==null){
-			integerNumberFormat=DecimalFormat.getIntegerInstance();
+
+	protected NumberFormat getIntegerNumberFormat() {
+		if (integerNumberFormat == null) {
+			integerNumberFormat = DecimalFormat.getIntegerInstance();
 		}
 		return integerNumberFormat;
 	}
@@ -101,37 +106,37 @@ class ViewLabelProvider extends ColumnLabelProvider {
 		if (object instanceof MethodCall) {
 			MethodCall mc = (MethodCall) object;
 			if (mc.isUserDefined()) {
-				if (mc.getNamespace() != null) {
+				if (mc.getNamespace() != null && showNamespaceInTooltip) {
 					result += mc.getNamespace() + "\\";
 				}
-				if (mc.getClassName() != null) {
+				if (mc.getClassName() != null && mc.getClassName().length() != 0) {
 					result += mc.getClassName();
-				}
-				switch (mc.getFunctionType()) {
-				case StaticMember:
-					result += "::";
-					break;
-				case Member:
-					;
-				case New:
-				case Normal:
-				default:
-					result += "->";
-					break;
+					switch (mc.getFunctionType()) {
+					case StaticMember:
+						result += "::";
+						break;
+					case Member:
+						;
+					case New:
+					case Normal:
+					default:
+						result += "->";
+						break;
+					}
 				}
 				result += mc.getMethodName();
-			}else{
+			} else {
 				result += mc.getMethodName();
 			}
 		} else if (object instanceof Assignment) {
-			Assignment as=(Assignment)object;
+			Assignment as = (Assignment) object;
 			result += as.getVariableName();
 		}
 		return result;
 	}
 
 	public Image getColumnImage(Object obj, int index) {
-		if(index!=0){
+		if (index != 0) {
 			return null;
 		}
 		if (obj instanceof BasicOperation) {
@@ -140,18 +145,21 @@ class ViewLabelProvider extends ColumnLabelProvider {
 			if (bo instanceof MethodCall) {
 				MethodCall mc = (MethodCall) bo;
 				if (mc.isUserDefined()) {
-					imgd = getImageDescriptor("icons/full/obj16/phpfunctiondata_pub.gif",mc.getFunctionType()==PHPFunctionType.StaticMember?"icons/full/ovr16/static_co.gif":null);
+					imgd = getImageDescriptor("icons/full/obj16/phpfunctiondata_pub.gif",
+							mc.getFunctionType() == PHPFunctionType.StaticMember ? "icons/full/ovr16/static_co.gif"
+									: null);
 				} else {
-					imgd = getImageDescriptor("icons/full/obj16/phpfunction_internal.gif",mc.getFunctionType() == PHPFunctionType.New?"icons/full/ovr16/constr_ovr.gif":null);
+					imgd = getImageDescriptor("icons/full/obj16/phpfunction_internal.gif",
+							mc.getFunctionType() == PHPFunctionType.New ? "icons/full/ovr16/constr_ovr.gif" : null);
 				}
 				return imgd;
-//				if (mc.getFunctionType() == PHPFunctionType.StaticMember) {
-//					imgd = new OverlayImageDescriptor(imgd,
-//							Activator.getImageDescriptor("icons/full/ovr16/static_co.gif"));
-//				} else if (mc.getFunctionType() == PHPFunctionType.New) {
-//					imgd = new OverlayImageDescriptor(imgd,
-//							Activator.getImageDescriptor("icons/full/ovr16/constr_ovr.gif"));
-//				}
+				// if (mc.getFunctionType() == PHPFunctionType.StaticMember) {
+				// imgd = new OverlayImageDescriptor(imgd,
+				// Activator.getImageDescriptor("icons/full/ovr16/static_co.gif"));
+				// } else if (mc.getFunctionType() == PHPFunctionType.New) {
+				// imgd = new OverlayImageDescriptor(imgd,
+				// Activator.getImageDescriptor("icons/full/ovr16/constr_ovr.gif"));
+				// }
 			} else if (bo instanceof Assignment) {
 				VariableData vd = (VariableData) bo.getDataNode().getChildren()[bo.getDataNode().getChildren().length - 1];
 				String path, overlay = null;
@@ -201,21 +209,21 @@ class ViewLabelProvider extends ColumnLabelProvider {
 			return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_INFO_TSK);
 		}
 	}
-	
-	private Image getImageDescriptor(String basic){
+
+	private Image getImageDescriptor(String basic) {
 		return getImageDescriptor(basic, null);
 	}
-	
-	private Image getImageDescriptor(String basic, String overlay){
-		if(overlay!=null){
+
+	private Image getImageDescriptor(String basic, String overlay) {
+		if (overlay != null) {
 			return new OverlayImageDescriptor(Activator.getImageDescriptor(basic),
 					Activator.getImageDescriptor(overlay)).createImage();
-		}else{
+		} else {
 			return Activator.getImageDescriptor(basic).createImage();
 		}
 	}
 
 	public Image getImage(Object obj) {
-		return getColumnImage(obj,index);
+		return getColumnImage(obj, index);
 	}
 }

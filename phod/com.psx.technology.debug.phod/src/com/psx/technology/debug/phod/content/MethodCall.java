@@ -5,8 +5,6 @@ import java.util.regex.Pattern;
 import com.psx.technology.debug.phod.content.data.TreeNode;
 import com.psx.technology.debug.phod.content.parser.PHPFunctionType;
 
-
-
 public class MethodCall extends BasicOperation<MethodCall> {
 
 	/**
@@ -32,7 +30,7 @@ public class MethodCall extends BasicOperation<MethodCall> {
 	}
 
 	public boolean isUserDefined() {
-		return userDefinedId.intValue()>0 && getFunctionType().getId() < PHPFunctionType.Eval.getId();
+		return userDefinedId.intValue() > 0 && getFunctionType().getId() < PHPFunctionType.Eval.getId();
 	}
 
 	public String getNamespace() {

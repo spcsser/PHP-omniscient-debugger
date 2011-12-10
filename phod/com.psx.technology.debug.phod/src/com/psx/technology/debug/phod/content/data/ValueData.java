@@ -18,6 +18,7 @@ public class ValueData implements Serializable {
 		private static final long serialVersionUID = 217007122411285356L;
 		protected AtomType typ;
 		protected Long id;
+		protected Long classId;
 		protected String name;
 		protected String atomValue;// can be any: ValueData, String, Integer,
 									// Array or even null
@@ -116,6 +117,18 @@ public class ValueData implements Serializable {
 				return true;
 
 			return false;
+		}
+		
+		public Long getClassId() {
+			return classId;
+		}
+
+		public void setClassId(Long classId) {
+			this.classId = classId;
+		}
+		
+		public void setClassId(Number id){
+			this.setClassId(id.longValue());
 		}
 	}
 

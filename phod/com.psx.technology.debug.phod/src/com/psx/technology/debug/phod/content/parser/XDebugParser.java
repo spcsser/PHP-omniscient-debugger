@@ -24,14 +24,15 @@ import com.psx.technology.debug.phod.content.data.AbstractData;
 import com.psx.technology.debug.phod.content.data.AtomType;
 import com.psx.technology.debug.phod.content.data.Modifier;
 import com.psx.technology.debug.phod.content.data.TreeNode;
-import com.psx.technology.debug.phod.content.data.VariableData;
 import com.psx.technology.debug.phod.content.data.ValueData.ValueCoreData;
+import com.psx.technology.debug.phod.content.data.VariableData;
 
 public class XDebugParser implements Parser {
 
 	public static final Integer STATE_ENTER = 0;
 	public static final Integer STATE_EXIT = 1;
 	public static final Integer STATE_ASSIGNMENT = 2;
+	public static final Integer STATE_EXCEPTION = 6;
 
 	public static final Long FUNCTION_INTERNAL = 0L;
 	public static final Long FUNCTION_USER_DEFINED = 1L;
@@ -125,8 +126,14 @@ public class XDebugParser implements Parser {
 					} else if (STATE_ASSIGNMENT.equals(actionType)) {
 						cm = prd.createAssignment(id.longValue(), cm);
 						handleAssignmentLineData((Assignment) cm, jsob, pd);
+					} else if(STATE_EXCEPTION.equals(actionType)){
+						cm = prd.createMethod(id.longValue(), cm);
+						MethodCall mc=handleExceptionLineData((MethodCall) cm, jsob, actionType);
+						while(callStack.peek().getLevel()>mc.getLevel()){
+							callStack.pop();
+						}
 					} else {
-						throw new IllegalArgumentException("State is note expected with value " + jsob.get("typ"));
+						throw new IllegalArgumentException("State is note expected with value " + actionType + " for type " + jsob.get("atp"));
 					}
 
 					if (monitor.isCanceled())
@@ -155,6 +162,19 @@ public class XDebugParser implements Parser {
 			return prd;
 		}
 		return null;
+	}
+
+	protected MethodCall handleExceptionLineData(MethodCall mc, JSONObject jsob, Integer actionType) {
+		// 0 Level, 1 ID, 2 Enter(0)/Exit(1), 3 timestamp, 4 memory commit
+		mc.setLevel((Number) jsob.get("lvl"));
+
+		mc.setTimestamp((Number) jsob.get("tme"), 0);
+		mc.setMemorySize((Number) jsob.get("mem"), 0);
+		String[] mtd = splitMethodName((String) jsob.get("nme"));
+		mc.setNameArray(mtd);
+		mc.setFunctionTypeId(0);
+		mc.setUserDefined(0);
+		return mc;
 	}
 
 	protected void handleAssignmentLineData(Assignment mc, HashMap<?,?> jsob, ProgramData pd) {
@@ -275,11 +295,13 @@ public class XDebugParser implements Parser {
 					actionId = (Number) jsob.get("aid");
 					type = ((Number) jsob.get("atp")).intValue();
 					basop = prd.getMethodById(actionId.longValue());
+					scope = 0L;
 					if (basop == null) {
 						System.err.println("Skipped id " + actionId+", no method found.");
 						continue;
 					}
 					
+					/*
 					if (jsob.containsKey("id")) {
 						scope = (Number) jsob.get("id");
 						scopeType = "id";
@@ -292,26 +314,31 @@ public class XDebugParser implements Parser {
 					}else{
 						scope = actionId;
 						scopeType = "aid";
-					}
+					}*/
 
+					if(jsob.containsKey("id")){
+						scope=(Number)jsob.get("id");
+					}
 					
 					switch (type) {
 					case 0: // Methodcall
 						// object scope (can be null)
 						// basop.getDataNode().add();
+						
 						mc = (MethodCall) basop;
 						vd = null;
 						if (mc.isUserDefined()) {
 //							vd = new VariableData(basop.getDataNode(), scope, scopeType, "this", actionId, Modifier.This);
 							vd = new VariableData(basop.getDataNode(), "this", actionId.longValue(), Modifier.This);
 							handleDataJSONObject(vd, jsob.get("obj"), actionId.longValue());
+							scope=((ValueCoreData)vd.getLastValue()).getId();
 						}
 						// arguments (can be empty)
 						jsa = (ArrayList<?>) jsob.get("arg");
 						if (jsa != null && jsa.size() > 0) {
 //							vd = new VariableData(basop.getDataNode(), scope, scopeType, "Arguments", actionId, Modifier.Arguments);
 							vd = new VariableData(basop.getDataNode(), "Arguments", actionId.longValue(), Modifier.Arguments);
-							handlePropsJSONObject(vd, jsa, actionId.longValue(), scope.longValue(), scopeType);
+							handlePropsJSONObject(vd, jsa, actionId.longValue(), scope.longValue(), scope.longValue(), scopeType);
 						}
 						break;
 					case 1: // Methodreturn
@@ -326,13 +353,15 @@ public class XDebugParser implements Parser {
 						break;
 					case 2: // Assignment
 						name = ((Assignment) basop).getVariableName();
+						
 						jsob.put("nme", name);
-						if(jsob.get("obj")!=null){
-//							vd = new VariableData(basop.getDataNode(), scope, scopeType, "this", actionId, Modifier.This);
-							vd = new VariableData(basop.getDataNode(), "this", actionId.longValue(), Modifier.This);
-							handleDataJSONObject(vd, jsob.get("obj"), actionId.longValue());
+						scope=(Number)jsob.get("id");
+						if(scope==null || scope.intValue()==0){
+							scope=basop.getParent().getActionId();
+							scopeType=ProgramData.SCOPETYPE_LOCAL;
 						}
-						handlePropJSONObject(basop.getDataNode(), jsob, actionId.longValue(), scope.longValue(), scopeType);
+						vd = pd.getVariable(basop.getDataNode(), scope.longValue(), scope.longValue(), scopeType, name, actionId.longValue(), Modifier.Unknown);
+						handlePropJSONObject(vd, jsob, actionId.longValue(), scope.longValue(), scopeType);
 						break;
 					default:
 						System.err.println("Unexpected actionType: "+type);
@@ -398,7 +427,12 @@ public class XDebugParser implements Parser {
 				String name=(String) jso.get("nme");
 				node = this.pd.addValueData(parent, oid,
 						AtomType.Object, id, name, null);
-				handlePropsJSONObject(node, (ArrayList<?>) jso.get("val"), id, oid, name);
+				if(jso.containsKey("cid")){
+					node.setClassId((Number)jso.get("cid"));
+				}else{
+					node.setClassId(0L);
+				}
+				handlePropsJSONObject(node, (ArrayList<?>) jso.get("val"), id, oid, node.getClassId(), ProgramData.SCOPETYPE_OBJECT);
 			} else if ("array".equals(type)) {
 				node = this.pd.addValueData(parent, (Long) jso.get("id"),
 						AtomType.Array, id, (String) jso.get("nme"), null);
@@ -443,45 +477,52 @@ public class XDebugParser implements Parser {
 		VariableData vd=null;
 		for (int i = 0; i < jsa.size(); i++) {
 			jso = (HashMap<?,?>) jsa.get(i);
-			vd = this.pd.getVariable(parent, scope, "id", (String) jso.get("nme"), actionId, Modifier.ArrayField);
+			vd = this.pd.getVariable(parent, scope, scope, "id", (String) jso.get("nme"), actionId, Modifier.ArrayField);
 			handleDataJSONObject(vd, jso.get("val"), actionId);
 		}
 	}
 
-	protected void handlePropsJSONObject(AbstractData parent, ArrayList<?> jsa, Long actionId, Long scope, String scopeType) {
+	protected void handlePropsJSONObject(AbstractData parent, ArrayList<?> jsa, Long actionId, Long scope, Long classId, String scopeType) {
 		if (jsa == null || jsa.size()==0) {
 			return;
 		}
+		VariableData vd=null;
+		HashMap<?,?> jso=null;
+		Modifier mod=null;
 		for (int i = 0; i < jsa.size(); i++) {
-			handlePropJSONObject(parent, (HashMap<?,?>) jsa.get(i), actionId, scope, scopeType);
-		}
-	}
-
-	protected void handlePropJSONObject(AbstractData parent, HashMap<?,?> jso, Long actionId, Long scope, String scopeType) {
-		String name = (String) jso.get("nme");
-		Modifier mod;
-		if(jso.get("mod")==null){
-			mod=Modifier.Local;
-		}else{
-			mod= Modifier.getModifier(jso.get("mod"));
-		}
-		if (scope == null) {
-			if ((scope=(Long)jso.get("ast"))!=null) {
-				scopeType="ast";
-//				scope = (Long) jso.get("ast");
-			} else if ((scope=(Long)jso.get("id"))!=null) {
-//				scope = (Long) jso.get("id");
-				scopeType="id";
-			} else if(jso.containsKey("cid")) {
-				scopeType = jso.get("cid").toString();
-				scope = 0L;
+			jso=(HashMap<?,?>)jsa.get(i);
+		
+			if(parent instanceof VariableData && ((VariableData)parent).getModifier().equals(Modifier.Arguments)){
+				mod=Modifier.Local;
+			}else if(jso.get("mod")==null){
+				mod=Modifier.Unknown;
+			}else{
+				mod= Modifier.getModifier(jso.get("mod"));
 			}
+			String name = (String) jso.get("nme");
+			vd = this.pd.getVariable(parent, scope, classId, scopeType, name, actionId, mod);
+			handlePropJSONObject(vd, jso, actionId, scope, scopeType);
 		}
-		VariableData vd = this.pd.getVariable(parent, scope, scopeType, name, actionId, mod);
-		handleDataJSONObject(vd, jso.get("val"), actionId);
+	}
+
+	protected void handlePropJSONObject(VariableData parent, HashMap<?,?> jso, Long actionId, Long scope, String scopeType) {
+		//String name = (String) jso.get("nme");
+		//Long classId = null;
+		//VariableData vd=null;
+		
+		
+		
+		
+//		if (scope == 0L) {
+//			
+//		}
+		
+		//VariableData vd = this.pd.getVariable(parent, scope, classId, scopeType, name, actionId, mod);
+		handleDataJSONObject(parent, jso.get("val"), actionId);
 
 	}
 
+	/*
 	protected void handleVarJSONObject(AbstractData parent, HashMap<?,?> jso, Long actionId, Long scope, String scopeType) {
 		String name = (String) jso.get("nme");
 		Modifier mod;
@@ -491,22 +532,13 @@ public class XDebugParser implements Parser {
 			mod= Modifier.getModifier(jso.get("mod"));
 		}
 		if (scope == null) {
-			if ((scope=(Long)jso.get("ast"))!=null) {
-				scopeType="ast";
-//				scope = (Long) jso.get("ast");
-			} else if ((scope=(Long)jso.get("id"))!=null) {
-//				scope = (Long) jso.get("id");
-				scopeType="id";
-			} else if(jso.containsKey("cid")) {
-				scopeType = jso.get("cid").toString();
-				scope = 0L;
-			}
+			
 		}
 		VariableData vd = this.pd.getVariable(parent, scope, scopeType, name, actionId, mod);
 		handleDataJSONObject(vd, jso.get("val"), actionId);
 		if(jso.containsKey("vvl")){
 			handleDataJSONObject(vd, jso.get("vvl"), actionId);
 		}
-	}
+	}*/
 	
 }
