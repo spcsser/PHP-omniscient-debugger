@@ -15,10 +15,6 @@ public class Activator extends AbstractUIPlugin {
 
 	// The shared instance
 	private static Activator plugin;
-
-	private String localPath;
-
-	private String remotePath;
 	
 	/**
 	 * The constructor

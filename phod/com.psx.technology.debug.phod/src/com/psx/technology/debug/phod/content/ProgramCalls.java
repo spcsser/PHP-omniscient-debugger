@@ -11,8 +11,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.psx.technology.debug.phod.content.data.AbstractData;
 import com.psx.technology.debug.phod.content.data.TreeNode;
-import com.psx.technology.debug.phod.content.data.VariableData;
 import com.psx.technology.debug.phod.content.data.ValueData.ValueCoreData;
+import com.psx.technology.debug.phod.content.data.VariableData;
 
 public class ProgramCalls implements Serializable {
 

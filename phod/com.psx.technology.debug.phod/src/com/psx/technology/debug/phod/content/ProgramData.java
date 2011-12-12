@@ -9,8 +9,8 @@ import com.psx.technology.debug.phod.content.data.AbstractData;
 import com.psx.technology.debug.phod.content.data.AtomType;
 import com.psx.technology.debug.phod.content.data.Modifier;
 import com.psx.technology.debug.phod.content.data.ValueData;
-import com.psx.technology.debug.phod.content.data.VariableData;
 import com.psx.technology.debug.phod.content.data.ValueData.ValueCoreData;
+import com.psx.technology.debug.phod.content.data.VariableData;
 
 public class ProgramData implements Serializable {
 

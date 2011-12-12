@@ -7,8 +7,8 @@ import com.psx.technology.debug.phod.content.BasicOperation;
 import com.psx.technology.debug.phod.content.data.AbstractData;
 import com.psx.technology.debug.phod.content.data.AtomType;
 import com.psx.technology.debug.phod.content.data.TreeNode;
-import com.psx.technology.debug.phod.content.data.VariableData;
 import com.psx.technology.debug.phod.content.data.ValueData.ValueCoreData;
+import com.psx.technology.debug.phod.content.data.VariableData;
 
 class ViewDataStructureContentProvider implements ITreeContentProvider {
 

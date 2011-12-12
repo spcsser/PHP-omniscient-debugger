@@ -1,6 +1,5 @@
 package com.psx.technology.debug.phod.preferences;
 
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Composite;
 
 import com.psx.technology.debug.phod.Activator;
