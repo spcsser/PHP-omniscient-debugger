@@ -722,7 +722,7 @@ public class CompareRunDataView extends ViewPart {
 		};
 		action2.setText("Settings");
 		action2.setToolTipText("Settings");
-		action2.setImageDescriptor(Activator.getImageDescriptor("icons/full/etool16/search.gif"));
+		action2.setImageDescriptor(Activator.getImageDescriptor("icons/full/etool16/settings.png"));
 
 		action3 = new Action() {
 			public void run() {

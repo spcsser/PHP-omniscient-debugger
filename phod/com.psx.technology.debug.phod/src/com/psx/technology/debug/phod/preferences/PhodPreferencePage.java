@@ -1,6 +1,8 @@
 package com.psx.technology.debug.phod.preferences;
 
+import org.eclipse.jface.preference.FieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -20,10 +22,10 @@ import com.psx.technology.debug.phod.Activator;
  * be accessed directly via the preference store.
  */
 
-public class PhodPreferencePage
-	extends FieldEditorPreferencePage
-	implements IWorkbenchPreferencePage {
+public class PhodPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
+	protected MappingFieldEditor mfe=null;
+	
 	public PhodPreferencePage() {
 		super(GRID);
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
@@ -37,8 +39,8 @@ public class PhodPreferencePage
 	 * restore itself.
 	 */
 	public void createFieldEditors() {
-		addField(new MappingFieldEditor(PreferenceConstants.P_MAPPING,"Map server to local Path", new String[]{"Server path","Local path"},new int[]{200,200},getFieldEditorParent()));
-		
+		mfe=new MappingFieldEditor(PreferenceConstants.P_MAPPING,"Map server to local Path", new String[]{"Server path","Local path"},new int[]{200,200},getFieldEditorParent());
+		addField(mfe);
 		/*
 		addField(new DirectoryFieldEditor(PreferenceConstants.P_PATH, 
 				"&Directory preference:", getFieldEditorParent()));
@@ -67,4 +69,29 @@ public class PhodPreferencePage
 	public void init(IWorkbench workbench) {
 	}
 	
+	@Override
+	protected void checkState(){
+		super.checkState();
+		if(!isValid()){
+			setErrorMessage(mfe.getErrorMessage());
+			return;
+		}
+		if(!mfe.isStateSane()){
+			setErrorMessage(mfe.getErrorMessage());
+			setValid(false);
+		}else{
+			setErrorMessage(null);
+			setValid(true);
+		}
+	}
+	
+	@Override
+	public void propertyChange(PropertyChangeEvent e){
+		super.propertyChange(e);
+		if(e.getProperty().equals(FieldEditor.VALUE)){
+			if(e.getSource() == mfe){
+				checkState();
+			}
+		}
+	}
 }

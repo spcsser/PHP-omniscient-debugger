@@ -456,8 +456,8 @@ public abstract class TableFieldEditor extends FieldEditor {
 										case SWT.Traverse:
 											switch (e.detail) {
 											case SWT.TRAVERSE_RETURN:
-												item.setText(column, text
-														.getText());
+												fireValueChanged(VALUE, item.getText(), text.getText());
+												item.setText(column, text.getText());
 												// FALL THROUGH
 											case SWT.TRAVERSE_ESCAPE:
 												text.dispose();
