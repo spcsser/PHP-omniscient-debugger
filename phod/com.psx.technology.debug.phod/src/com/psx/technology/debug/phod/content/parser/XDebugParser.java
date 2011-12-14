@@ -393,11 +393,11 @@ public class XDebugParser implements Parser {
 							vd = pd.getVariable(fo.getDataNode(), scope.longValue(), scope.longValue(), ProgramData.SCOPETYPE_FAILURE, "Message", actionId.longValue(), Modifier.Local);
 							ValueData val=new ValueData(vd, -23L, AtomType.String, actionId.longValue(), "Message", message);
 							vd.addTimeEntry(actionId.longValue(), val.getLastValue());
-							//pd.addValueData(vd, -23L, AtomType.String, actionId.longValue(), "Message", message);
 						}
 						break;
 					default:
 						System.err.println("Unexpected actionType: "+type);
+						break;
 					}
 					if (monitor.isCanceled())
 						break;

@@ -45,8 +45,13 @@ public class OpenEditorAtLineAction extends OpenEditorAction {
 				String s=document.get(index-1, document
 						.getLineLength(fLineNumber - 1));
 				if(fMethodName!=null){
-					index=index+s.indexOf(fMethodName)-1;
-					textEditor.selectAndReveal(index, fMethodName.length());
+					int i=s.indexOf(fMethodName)-1;
+					if(i<0){
+						i=document.getLineLength(fLineNumber-1)-document.getLineDelimiter(fLineNumber-1).length();
+						textEditor.selectAndReveal(index, i);
+					}else{
+						textEditor.selectAndReveal(i+index, fMethodName.length());
+					}
 				}else{
 					textEditor.selectAndReveal(index, document.getLineLength(fLineNumber-1));
 				}
