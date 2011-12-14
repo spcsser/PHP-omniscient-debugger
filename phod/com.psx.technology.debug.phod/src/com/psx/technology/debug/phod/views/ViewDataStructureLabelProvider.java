@@ -46,6 +46,8 @@ class ViewDataStructureLabelProvider extends ColumnLabelProvider {
 						sstr+=vcd.getString();
 					}
 					sstr+=" (id = "+vcd.getId()+")";
+				}else if(vd.getModifier().equals(Modifier.Arguments)){
+					sstr+="";
 				}else if(vd.getModifier().ordinal()>Modifier.This.ordinal()){
 					sstr+="Unknown";
 				}else{

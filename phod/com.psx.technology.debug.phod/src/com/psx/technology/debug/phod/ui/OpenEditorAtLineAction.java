@@ -44,8 +44,12 @@ public class OpenEditorAtLineAction extends OpenEditorAction {
 				int index=document.getLineOffset(fLineNumber - 1);
 				String s=document.get(index-1, document
 						.getLineLength(fLineNumber - 1));
-				index=index+s.indexOf(fMethodName)-1;
-				textEditor.selectAndReveal(index, fMethodName.length());
+				if(fMethodName!=null){
+					index=index+s.indexOf(fMethodName)-1;
+					textEditor.selectAndReveal(index, fMethodName.length());
+				}else{
+					textEditor.selectAndReveal(index, document.getLineLength(fLineNumber-1));
+				}
 			} catch (BadLocationException x) {
 				// marker refers to invalid text position -> do nothing
 			}

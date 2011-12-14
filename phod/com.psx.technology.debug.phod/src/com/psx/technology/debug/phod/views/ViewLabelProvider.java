@@ -13,6 +13,7 @@ import org.eclipse.ui.PlatformUI;
 import com.psx.technology.debug.phod.Activator;
 import com.psx.technology.debug.phod.content.Assignment;
 import com.psx.technology.debug.phod.content.BasicOperation;
+import com.psx.technology.debug.phod.content.FailureOccurence;
 import com.psx.technology.debug.phod.content.MethodCall;
 import com.psx.technology.debug.phod.content.data.VariableData;
 import com.psx.technology.debug.phod.content.parser.PHPFunctionType;
@@ -70,6 +71,9 @@ class ViewLabelProvider extends ColumnLabelProvider {
 			} else if (bo instanceof Assignment) {
 				Assignment as = (Assignment) bo;
 				result = as.getVariableName() + " = ";
+			} else if (bo instanceof FailureOccurence){
+				FailureOccurence fo=(FailureOccurence) bo;
+				result = fo.getName();
 			}
 			break;
 		case 1:
@@ -130,6 +134,9 @@ class ViewLabelProvider extends ColumnLabelProvider {
 		} else if (object instanceof Assignment) {
 			Assignment as = (Assignment) object;
 			result += as.getVariableName();
+		} else if(object instanceof FailureOccurence){
+			FailureOccurence fo=(FailureOccurence)object;
+			result+=fo.getName();
 		}
 		return result;
 	}
@@ -201,7 +208,9 @@ class ViewLabelProvider extends ColumnLabelProvider {
 					break;
 				}
 				return getImageDescriptor(path, overlay);
-			} else {
+			} else if(bo instanceof FailureOccurence){
+				return getImageDescriptor("icons/full/obj16/warning_obj.gif");
+			}else{
 				return getImageDescriptor("icons/full/obj16/field_default_obj.gif");
 			}
 		} else {

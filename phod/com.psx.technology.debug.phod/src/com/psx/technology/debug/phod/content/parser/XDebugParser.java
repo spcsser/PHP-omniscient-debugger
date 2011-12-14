@@ -17,6 +17,7 @@ import org.json.simple.parser.ParseException;
 
 import com.psx.technology.debug.phod.content.Assignment;
 import com.psx.technology.debug.phod.content.BasicOperation;
+import com.psx.technology.debug.phod.content.FailureOccurence;
 import com.psx.technology.debug.phod.content.MethodCall;
 import com.psx.technology.debug.phod.content.ProgramCalls;
 import com.psx.technology.debug.phod.content.ProgramData;
@@ -24,6 +25,7 @@ import com.psx.technology.debug.phod.content.data.AbstractData;
 import com.psx.technology.debug.phod.content.data.AtomType;
 import com.psx.technology.debug.phod.content.data.Modifier;
 import com.psx.technology.debug.phod.content.data.TreeNode;
+import com.psx.technology.debug.phod.content.data.ValueData;
 import com.psx.technology.debug.phod.content.data.ValueData.ValueCoreData;
 import com.psx.technology.debug.phod.content.data.VariableData;
 
@@ -33,6 +35,7 @@ public class XDebugParser implements Parser {
 	public static final Integer STATE_EXIT = 1;
 	public static final Integer STATE_ASSIGNMENT = 2;
 	public static final Integer STATE_EXCEPTION = 6;
+	public static final Integer STATE_ERROR = 7;
 
 	public static final Long FUNCTION_INTERNAL = 0L;
 	public static final Long FUNCTION_USER_DEFINED = 1L;
@@ -93,6 +96,7 @@ public class XDebugParser implements Parser {
 
 			BasicOperation<?> cm = null;
 			Number id;
+			Number level;
 			
 			try {
 				while ((nextLine = reader.readLine()) != null) {
@@ -109,29 +113,35 @@ public class XDebugParser implements Parser {
 					
 					actionType = ((Number) jsob.get("atp")).intValue();
 					id = (Number)jsob.get("aid");
+					level = (Number)jsob.get("lvl");
 					cm = null;
 					if(!callStack.isEmpty()){
 						cm=callStack.peek();
 					}
 					if (STATE_ENTER.equals(actionType)) {
+						while(!callStack.isEmpty() && cm.getLevel()>=level.intValue()){
+							cm=callStack.pop();
+							if(!callStack.isEmpty()){
+								cm=callStack.peek();
+							}
+						}
 						cm = prd.createMethod(id.longValue(), cm);
 						callStack.push((MethodCall) cm);
 						handleMethodLineData((MethodCall) cm, jsob, actionType);
 					} else if (STATE_EXIT.equals(actionType)) {
 						cm = prd.getMethodById(id.longValue());
 						if (cm != null) {
-							callStack.pop();
+							if(!callStack.isEmpty()){
+								callStack.pop();
+							}
 							handleMethodLineData((MethodCall) cm, jsob, actionType);
 						}
 					} else if (STATE_ASSIGNMENT.equals(actionType)) {
 						cm = prd.createAssignment(id.longValue(), cm);
 						handleAssignmentLineData((Assignment) cm, jsob, pd);
-					} else if(STATE_EXCEPTION.equals(actionType)){
-						cm = prd.createMethod(id.longValue(), cm);
-						MethodCall mc=handleExceptionLineData((MethodCall) cm, jsob, actionType);
-						while(callStack.peek().getLevel()>mc.getLevel()){
-							callStack.pop();
-						}
+					} else if(STATE_EXCEPTION.equals(actionType)||STATE_ERROR.equals(actionType)){
+						FailureOccurence mc = prd.createFailure(id.longValue(), cm);
+						mc=handleFailureLineData((FailureOccurence) mc, jsob, actionType);
 					} else {
 						throw new IllegalArgumentException("State is note expected with value " + actionType + " for type " + jsob.get("atp"));
 					}
@@ -164,16 +174,19 @@ public class XDebugParser implements Parser {
 		return null;
 	}
 
-	protected MethodCall handleExceptionLineData(MethodCall mc, JSONObject jsob, Integer actionType) {
+	protected FailureOccurence handleFailureLineData(FailureOccurence mc, JSONObject jsob, Integer actionType) {
 		// 0 Level, 1 ID, 2 Enter(0)/Exit(1), 3 timestamp, 4 memory commit
 		mc.setLevel((Number) jsob.get("lvl"));
-
+		mc.setFilepath((String)jsob.get("fle"));
+		mc.setLineNumber((Number)jsob.get("lne"));
 		mc.setTimestamp((Number) jsob.get("tme"), 0);
 		mc.setMemorySize((Number) jsob.get("mem"), 0);
-		String[] mtd = splitMethodName((String) jsob.get("nme"));
-		mc.setNameArray(mtd);
-		mc.setFunctionTypeId(0);
-		mc.setUserDefined(0);
+		mc.setName((String)jsob.get("nme"));
+		if(STATE_ERROR.equals(actionType)){
+			
+		}else if(STATE_EXCEPTION.equals(actionType)){
+			
+		}
 		return mc;
 	}
 
@@ -365,6 +378,23 @@ public class XDebugParser implements Parser {
 						}
 						vd = pd.getVariable(basop.getDataNode(), scope.longValue(), scope.longValue(), scopeType, name, actionId.longValue(), mod);
 						handlePropJSONObject(vd, jsob, actionId.longValue(), scope.longValue(), scopeType);
+						break;
+					case 6:
+					case 7:
+						FailureOccurence fo=((FailureOccurence) basop);
+						String message=(String)jsob.get("msg");
+						if(message!=null){
+							fo.setMessage(message);
+						}
+						if(jsob.containsKey("val")){
+							vd = pd.getVariable(fo.getDataNode(), scope.longValue(), scope.longValue(), ProgramData.SCOPETYPE_FAILURE, "Exception", actionId.longValue(), Modifier.Local);
+							handlePropJSONObject(vd, jsob, actionId.longValue(), scope.longValue(), ProgramData.SCOPETYPE_FAILURE);
+						}else{
+							vd = pd.getVariable(fo.getDataNode(), scope.longValue(), scope.longValue(), ProgramData.SCOPETYPE_FAILURE, "Message", actionId.longValue(), Modifier.Local);
+							ValueData val=new ValueData(vd, -23L, AtomType.String, actionId.longValue(), "Message", message);
+							vd.addTimeEntry(actionId.longValue(), val.getLastValue());
+							//pd.addValueData(vd, -23L, AtomType.String, actionId.longValue(), "Message", message);
+						}
 						break;
 					default:
 						System.err.println("Unexpected actionType: "+type);

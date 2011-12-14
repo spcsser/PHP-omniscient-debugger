@@ -64,6 +64,7 @@ import org.eclipse.ui.progress.UIJob;
 import com.psx.technology.debug.phod.Activator;
 import com.psx.technology.debug.phod.content.Assignment;
 import com.psx.technology.debug.phod.content.BasicOperation;
+import com.psx.technology.debug.phod.content.FailureOccurence;
 import com.psx.technology.debug.phod.content.MethodCall;
 import com.psx.technology.debug.phod.content.ProgramCalls;
 import com.psx.technology.debug.phod.content.ProgramCalls.SearchResult;
@@ -337,8 +338,10 @@ public class CompareRunDataView extends ViewPart {
 				} else {
 					methodName = m.getMethodName();
 				}
-			} else {
+			} else if(mc instanceof Assignment){
 				methodName = ((Assignment) mc).getVariableName();
+			}else if(mc instanceof FailureOccurence){
+				methodName=null;//methodName = "\\n.*";//((FailureOccurence)mc).getName();
 			}
 
 			Action a = createOpenEditorAction(path, mc.getLineNumber(), methodName, fType);

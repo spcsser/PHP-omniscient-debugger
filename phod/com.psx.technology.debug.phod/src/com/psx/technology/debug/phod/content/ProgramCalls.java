@@ -46,6 +46,7 @@ public class ProgramCalls implements Serializable {
 	public MethodCall getRootCall() {
 		if (callTree == null) {
 			callTree = new MethodCall(0L);
+			callTree.level=0;
 		}
 		return callTree;
 	}
@@ -203,5 +204,11 @@ public class ProgramCalls implements Serializable {
 
 	public ProgramData getProgramData() {
 		return this.programData;
+	}
+
+	public FailureOccurence createFailure(long actionId, BasicOperation<?> cm) {
+		FailureOccurence fo=new FailureOccurence(actionId, cm);
+		getCallMap().put(fo.getActionId(), fo);
+		return fo;
 	}
 }

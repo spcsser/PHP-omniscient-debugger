@@ -22,6 +22,7 @@ public class ProgramData implements Serializable {
 	public static final String SCOPETYPE_LOCAL = "L";
 	public static final String SCOPETYPE_GLOBAL = "G";
 	public static final String SCOPETYPE_OBJECT = "O";
+	public static final String SCOPETYPE_FAILURE = "F";
 	HashMap<String, VariableData> variableTable;
 	HashMap<Long, ValueData> valueTable;
 	ProgramCalls pc;
