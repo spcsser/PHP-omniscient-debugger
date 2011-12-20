@@ -40,7 +40,7 @@ class ViewDataStructureLabelProvider extends ColumnLabelProvider {
 			case 1:
 				ValueCoreData vcd=vd.getValueDataForAction(vcp.getActionId()>vd.getActionId()?vcp.getActionId():vd.getActionId());
 				if(vcd!=null){
-					if(vcd.getType()==AtomType.Object){
+					if(vcd.getType()==AtomType.Object || vcd.getType()==AtomType.Class){
 						sstr+=vcd.getName();
 					}else{
 						sstr+=vcd.getString();
@@ -119,13 +119,16 @@ class ViewDataStructureLabelProvider extends ColumnLabelProvider {
 			case This:
 				path = "icons/full/obj16/interest-decrease.gif";
 				break;
+			case Class:
+				path = "icons/full/obj16/phpclassdata.gif";
+				break;
 			default:
 				path = "icons/full/obj16/warning_obj.gif";
 				break;
 			}
 		} else if(element instanceof ValueCoreData){
 			AbstractData vcd=(AbstractData)element;
-			if(vcd.getType().equals(AtomType.Object)){
+			if(vcd.getType().equals(AtomType.Object) || vcd.getType().equals(AtomType.Class)){
 				path = "icons/full/obj16/phpclassdata.gif";
 			}else if(vcd.getType().equals(AtomType.Array)){
 				path = "icons/full/obj16/phparraydata.gif";

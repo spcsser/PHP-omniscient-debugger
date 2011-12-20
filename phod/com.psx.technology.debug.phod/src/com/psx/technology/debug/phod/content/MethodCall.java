@@ -89,4 +89,12 @@ public class MethodCall extends BasicOperation<MethodCall> {
 	public void setNameArray(String[] mtd) {
 		this.nameArray=mtd;
 	}
+
+	public boolean isMethod() {
+		return getFunctionType().equals(PHPFunctionType.Member);
+	}
+	
+	public boolean isStaticMethod(){
+		return getFunctionType().equals(PHPFunctionType.StaticMember);
+	}
 }

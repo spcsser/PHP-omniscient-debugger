@@ -7,7 +7,7 @@ public enum Modifier {
 			Static("static"), Public_Static("public static"), Protected_Static("protected static"), 
 			Private_Static("private static"), Constant("const"), Public_Constant("public const"), 
 			Protected_Constant("protected const"), Private_Constant("private const"), Local("local"),
-			Assignment("Assignment"), This("This"), Return("Return"), Arguments("Arguments");
+			Assignment("Assignment"), This("This"), Return("Return"), Arguments("Arguments"), Class("Class");
 
 	protected String name;
 	protected static HashMap<String, Modifier> mods;

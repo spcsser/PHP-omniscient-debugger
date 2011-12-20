@@ -342,11 +342,17 @@ public class XDebugParser implements Parser {
 						
 						mc = (MethodCall) basop;
 						vd = null;
-						if (mc.isUserDefined()) {
+						if (mc.isMethod()) {
 //							vd = new VariableData(basop.getDataNode(), scope, scopeType, "this", actionId, Modifier.This);
 							vd = new VariableData(basop.getDataNode(), "this", actionId.longValue(), Modifier.This);
 							handleDataJSONObject(vd, jsob.get("obj"), actionId.longValue());
 							scope=((ValueCoreData)vd.getLastValue()).getId();
+						}else if(mc.isStaticMethod()){
+							vd = new VariableData(basop.getDataNode(), "Class", actionId.longValue(), Modifier.Class);
+							handleDataJSONObject(vd, jsob.get("obj"), actionId.longValue());
+							if(!vd.getChildrenVector().isEmpty()){
+								scope=((ValueCoreData)vd.getLastValue()).getId();
+							}
 						}
 						// arguments (can be empty)
 						jsa = (ArrayList<?>) jsob.get("arg");
@@ -432,7 +438,9 @@ public class XDebugParser implements Parser {
 			Object type = jso.get("typ");
 			if (type==null && jso.containsKey("id")) {
 				node = this.pd.getValueData(parent, (Long) jso.get("id"), id);
-			} else if (type == null) {
+			}else if(type==null && jso.containsKey("cid")){
+				node = this.pd.getValueData(parent, (Long) jso.get("cid"), id);
+			}else if (type == null) {
 				System.err.println("Type==null: "+jso);
 			} else if ("bool".equals(type)) {
 				node = this.pd.addValueData(parent, (Long) jso.get("id"),
@@ -466,7 +474,21 @@ public class XDebugParser implements Parser {
 					node.setClassId(0L);
 				}
 				handlePropsJSONObject(node, (ArrayList<?>) jso.get("val"), id, oid, node.getClassId(), ProgramData.SCOPETYPE_OBJECT);
-			} else if ("array".equals(type)) {
+			} else if("class".equals(type)) {
+				Long oid = (Long) jso.get("cid");
+				if (oid == null) {
+					oid = -1L;
+				}
+				String name=(String) jso.get("nme");
+				node = this.pd.addValueData(parent, oid,
+						AtomType.Class, id, name, null);
+				if(jso.containsKey("cid")){
+					node.setClassId((Number)jso.get("cid"));
+				}else{
+					node.setClassId(0L);
+				}
+				handlePropsJSONObject(node, (ArrayList<?>) jso.get("val"), id, oid, node.getClassId(), ProgramData.SCOPETYPE_CLASS);
+			}else if ("array".equals(type)) {
 				node = this.pd.addValueData(parent, (Long) jso.get("id"),
 						AtomType.Array, id, (String) jso.get("nme"), null);
 				handleArrayFieldJSONObject(node, (ArrayList<?>) jso.get("val"), (Long) jso.get("id"), id);

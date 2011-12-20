@@ -43,7 +43,7 @@ class ViewDataStructureContentProvider implements ITreeContentProvider {
 				vcd = vd.getValueDataForAction(actionId > vd.getActionId() ? actionId : vd.getActionId());
 				if (vcd == null)
 					return false;
-				if (vcd.getType().equals(AtomType.Object) || vcd.getType().equals(AtomType.Array))
+				if (vcd.getType().equals(AtomType.Object) || vcd.getType().equals(AtomType.Array) || vcd.getType().equals(AtomType.Class))
 					return true;
 				return vcd.hasChildren();
 			}
@@ -75,7 +75,7 @@ class ViewDataStructureContentProvider implements ITreeContentProvider {
 				AbstractData vcd = null;
 				vcd = vd.getValueDataForAction(actionId > vd.getActionId() ? actionId : vd.getActionId());
 
-				if (vcd.getType().equals(AtomType.Object) || vcd.getType().equals(AtomType.Array)) {
+				if (vcd.getType().equals(AtomType.Object) || vcd.getType().equals(AtomType.Array) || vcd.getType().equals(AtomType.Class)) {
 					return new Object[] { vcd };
 				} else {
 					return vcd.getChildren();
